@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Happy Notes — What Made You Happy Today</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f3f7f6;
+      --card:#ffffff;
+      --accent:#7fb6b6;
+      --muted:#7a8a89;
+      --note:#fff3b0;
+      --shadow: 0 6px 18px rgba(28,41,40,0.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;min-height:100vh;font-family:Quicksand,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#eef8f7 0%, #f7fbfa 100%);color:#123;display:flex;align-items:center;justify-content:center;padding:28px;
+    }
+    .app{width:960px;max-width:96vw;background:var(--card);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    header h1{font-size:20px;margin:0;display:flex;align-items:center;gap:10px}
+    header h1 .hand{font-family:'Shadows Into Light',cursive;font-size:26px;color:var(--accent)}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn, .small, .secondary{transition:transform 0.12s ease, box-shadow 0.12s ease}
+    .btn:hover, .small:hover, .secondary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 20px rgba(0,0,0,0.14)}
+    .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+    .secondary{background:transparent;border:1px solid rgba(18,36,35,0.06);padding:8px 10px;border-radius:10px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .calendar{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .month{background:linear-gradient(180deg, rgba(127,182,182,0.06), rgba(255,255,255,0.6));padding:14px;border-radius:12px;min-height:420px;position:relative}
+    .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .nav{display:flex;gap:8px;align-items:center}
+    .small{font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid rgba(18,36,35,0.06);background:transparent;cursor:pointer}
+    .weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
+    .weekday{font-size:12px;text-align:center;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+    .day{background:transparent;border-radius:10px;padding:8px;min-height:76px;cursor:pointer;position:relative;transition:all .14s ease;border:1px solid transparent}
+    .day:hover{transform:translateY(-4px)}
+    .day.empty{opacity:0.35;cursor:default}
+    .num{font-weight:600;font-size:14px;color:#123}
+    .note-dot{position:absolute;right:8px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(127,182,182,0.28)}
+    .today{outline:2px solid rgba(127,182,182,0.28);border-radius:10px}
+    .right{background:linear-gradient(180deg,#ffffff,#fbfffd);border-radius:12px;padding:14px;min-height:420px;display:flex;flex-direction:column;gap:12px}
+    .sticky-preview{flex:1;display:flex;flex-direction:column;gap:10px}
+    .sticky{width:100%;min-height:110px;border-radius:14px;padding:14px;background:var(--note);box-shadow:0 10px 22px rgba(42,40,34,0.08);font-family:'Shadows Into Light',cursive;font-size:16px;color:#332e12;position:relative;overflow:auto;border:1px solid rgba(0,0,0,0.04)}
+    .sticky .meta{position:absolute;right:8px;bottom:8px;font-size:11px;color:rgba(0,0,0,0.45)}
+    .editor{display:flex;gap:8px;align-items:center}
+    .text{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(18,36,35,0.06);background:linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.6))}
+    .text textarea{width:100%;height:90px;border:none;resize:none;background:transparent;outline:none;font-family:inherit}
+    footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--muted)}
+    .modal{position:fixed;inset:0;background:rgba(8,13,12,0.25);display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+    .modal-card{width:380px;border-radius:16px;padding:18px;background:linear-gradient(180deg,#fffdf0,#fff7cc);box-shadow:0 18px 40px rgba(30,40,38,0.14)}
+    .modal-card textarea{width:100%;min-height:140px;border-radius:10px;padding:12px;border:1px solid rgba(0,0,0,0.06);resize:vertical;font-family:inherit}
+    .muted-2{font-size:12px;color:rgba(18,36,35,0.45)}
+    .empty-state{padding:18px;border-radius:10px;border:1px dashed rgba(18,36,35,0.04);background:linear-gradient(180deg,rgba(255,255,255,0.6),transparent)}
+    @media (max-width:880px){.calendar{grid-template-columns:1fr}.right{order:2}}
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <header>
+      <h1><span style="font-size:18px">🍃</span> Daily Happy Notes <span class="hand">— what made you smile</span></h1>
+      <div class="controls">
+        <div class="muted">Calm, short, daily — like tea for your brain.</div>
+      </div>
+    </header>
+    <main class="calendar" id="app">
+      <section class="month" aria-label="Monthly calendar">
+        <div class="month-head">
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="small" id="prev">◀</button>
+              <div style="min-width:180px;text-align:center;font-weight:600" id="monthLabel"></div>
+              <button class="small" id="next">▶</button>
+            </div>
+            <div style="margin-top:8px;font-size:13px;color:var(--muted)"><span id="subtitle">Click a day to add a happy note</span></div>
+          </div>
+          <div class="nav">
+            <select id="yearSel" class="small"></select>
+            <button class="btn" id="todayBtn">Today</button>
+          </div>
+        </div>
+        <div class="weekdays">
+          <div class="weekday">Sun</div>
+          <div class="weekday">Mon</div>
+          <div class="weekday">Tue</div>
+          <div class="weekday">Wed</div>
+          <div class="weekday">Thu</div>
+          <div class="weekday">Fri</div>
+          <div class="weekday">Sat</div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </section>
+      <aside class="right" aria-label="Note panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Preview</div>
+          <div class="muted-2">Saved locally on this device</div>
+        </div>
+        <div class="sticky-preview" id="previewArea">
+          <div class="empty-state" id="noNote">No day selected. Click any date to see or add your note.</div>
+        </div>
+        <div class="editor">
+          <div class="text">
+            <textarea id="quickText" placeholder="Type today's happy thing... (press Ctrl+Enter to save)"></textarea>
+          </div>
+          <div class="actions" style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn" id="saveQuick">Save</button>
+            <button class="secondary" id="exportBtn">Export</button>
+          </div>
+        </div>
+        <footer>
+          <div class="muted">Tip: keep it short — a sentence is perfect.</div>
+          <div class="muted">Made with calm vibes.</div>
+        </footer>
+      </aside>
+    </main>
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <div style="font-weight:700;margin-bottom:8px" id="modalDate">Date</div>
+        <textarea id="modalText" placeholder="Write what made you happy today..."></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div class="muted-2">Your note is stored in your browser only.</div>
+          <div>
+            <button class="secondary" id="delBtn">Delete</button>
+            <button class="btn" id="saveBtn">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const today = new Date();
+      let viewYear = today.getFullYear();
+      let viewMonth = today.getMonth();
+      const grid = document.getElementById('grid');
+      const monthLabel = document.getElementById('monthLabel');
+      const yearSel = document.getElementById('yearSel');
+      const prev = document.getElementById('prev');
+      const next = document.getElementById('next');
+      const todayBtn = document.getElementById('todayBtn');
+      const previewArea = document.getElementById('previewArea');
+      const noNote = document.getElementById('noNote');
+      const modalWrap = document.getElementById('modal');
+      const modalText = document.getElementById('modalText');
+      const modalDate = document.getElementById('modalDate');
+      const saveBtn = document.getElementById('saveBtn');
+      const delBtn = document.getElementById('delBtn');
+      const quickText = document.getElementById('quickText');
+      const saveQuick = document.getElementById('saveQuick');
+      const exportBtn = document.getElementById('exportBtn');
+      function storageKey(){return 'happyNotes_v1'}
+      function loadNotes(){try{const raw = localStorage.getItem(storageKey());return raw?JSON.parse(raw):{}}catch(e){return{}}}
+      function saveNotes(obj){localStorage.setItem(storageKey(),JSON.stringify(obj))}
+      let notes = loadNotes();
+      let selectedDate = null;
+      function formatDateObj(y,m,d){const mm = String(m+1).padStart(2,'0');const dd = String(d).padStart(2,'0');return `${y}-${mm}-${dd}`} 
+      function render(){
+        monthLabel.textContent = new Date(viewYear,viewMonth,1).toLocaleString(undefined,{month:'long',year:'numeric'});
+        yearSel.innerHTML = '';
+        for(let y = today.getFullYear()-3; y<=today.getFullYear()+3; y++){const opt = document.createElement('option');opt.value=y;opt.textContent=y; if(y===viewYear) opt.selected=true; yearSel.appendChild(opt)}
+        grid.innerHTML='';
+        const first = new Date(viewYear,viewMonth,1).getDay();
+        const days = new Date(viewYear,viewMonth+1,0).getDate();
+        for(let i=0;i<first;i++){const e=document.createElement('div');e.className='day empty';grid.appendChild(e)}
+        for(let d=1; d<=days; d++){const el = document.createElement('div');el.className='day';const num = document.createElement('div');num.className='num';num.textContent=d; el.appendChild(num);const key = formatDateObj(viewYear,viewMonth,d);if(notes[key]){const dot = document.createElement('div');dot.className='note-dot';el.appendChild(dot)}const isToday = (new Date().toDateString()===new Date(viewYear,viewMonth,d).toDateString());if(isToday) el.classList.add('today');el.addEventListener('click',function(){openModal(key, viewYear, viewMonth, d)});grid.appendChild(el)}
+      }
+      function openModal(key,y,m,d){selectedDate = key;modalText.value = notes[key] || '';modalDate.textContent = new Date(y,m,d).toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});modalWrap.style.display='flex';modalWrap.setAttribute('aria-hidden','false');modalText.focus();renderPreviewFor(key)}
+      function closeModal(){modalWrap.style.display='none';modalWrap.setAttribute('aria-hidden','true');}
+      saveBtn.addEventListener('click',()=>{if(!selectedDate) return; const txt = modalText.value.trim(); if(txt.length) notes[selectedDate]=txt; else delete notes[selectedDate]; saveNotes(notes); render(); renderPreviewFor(selectedDate); closeModal();})
+      delBtn.addEventListener('click',()=>{if(!selectedDate) return; if(notes[selectedDate]){delete notes[selectedDate]; saveNotes(notes);} render(); renderPreviewFor(selectedDate); closeModal();})
+      prev.addEventListener('click',()=>{ viewMonth--; if(viewMonth<0){viewMonth=11;viewYear--} render(); })
+      next.addEventListener('click',()=>{ viewMonth++; if(viewMonth>11){viewMonth=0;viewYear++} render(); })
+      todayBtn.addEventListener('click',()=>{ viewYear = today.getFullYear(); viewMonth = today.getMonth(); render(); })
+      yearSel.addEventListener('change',(e)=>{ viewYear = parseInt(e.target.value); render(); })
+      document.addEventListener('click',(e)=>{ if(e.target.closest('.modal-card')) return; if(modalWrap.style.display==='flex' && !e.target.closest('.modal-card')){ closeModal(); } });
+      function renderPreviewFor(key){previewArea.innerHTML=''; if(!key){ previewArea.appendChild(noNote); return; } const txt = notes[key]; if(!txt){ const el = document.createElement('div'); el.className='empty-state'; el.textContent='No note for this day yet. Add one!'; previewArea.appendChild(el); return; } const s = document.createElement('div'); s.className='sticky'; s.textContent = txt; const m = document.createElement('div'); m.className='meta'; m.textContent = key; s.appendChild(m); previewArea.appendChild(s);} 
+      saveQuick.addEventListener('click',()=>{ let targetDate = null; if(selectedDate && selectedDate.startsWith(String(viewYear))){ targetDate = selectedDate } else { const y=today.getFullYear(), m=today.getMonth(), dd=today.getDate(); targetDate = formatDateObj(y,m,dd) } const content = quickText.value.trim(); if(content.length) notes[targetDate]=content; else delete notes[targetDate]; saveNotes(notes); render(); renderPreviewFor(targetDate); quickText.value=''; })
+      quickText.addEventListener('keydown',(e)=>{ if(e.ctrlKey && e.key==='Enter'){ saveQuick.click(); } })
+      exportBtn.addEventListener('click',()=>{ const data = JSON.stringify(notes, null, 2); const blob = new Blob([data],{type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download = 'happy-notes-export.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); })
+      render();
+      const todayKey = formatDateObj(today.getFullYear(), today.getMonth(), today.getDate()); if(notes[todayKey]){ selectedDate = todayKey; renderPreviewFor(todayKey) }
+      document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') closeModal(); });
+      window._happyNotes = {notes,saveNotes,loadNotes};
+    })();
+  </script>
+</body>
+</html>
